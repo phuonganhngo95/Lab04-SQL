@@ -460,3 +460,170 @@ inner join Ketqua KQ on SV.MaSV = KQ.MaSV
 inner join MonHoc MH on KQ.MaMH = MH.MaMH
 where TenMH = @TenMH
 go
+
+-- Bài 5
+-- 1.
+select MaSV, MaKH, Phai
+from SinhVien
+where MaSV not in(
+	select MaSV from Ketqua
+)
+go
+
+-- 2.
+-- Cách 1
+select MaSV, CONCAT(HoSV, ' ', TenSV) as HoTen
+from SinhVien
+where MaSV not in (
+	select MaSV from Ketqua
+	where MaMH in(
+		select MaMH from MonHoc
+		where TenMH = N'Cơ sở dữ liệu'
+	)
+)
+go
+-- Diễn giải
+select MaMH from MonHoc where TenMH = N'Cơ sở dữ liệu'
+select MaSV from Ketqua where MaMH in(
+	select MaMH from MonHoc where TenMH = N'Cơ sở dữ liệu'
+)
+
+-- Cách 2
+SELECT MaSV,  MaKH,  Phai FROM [dbo].[SinhVien] 
+	WHERE MaSV NOT IN (SELECT MaSV FROM [dbo].[Ketqua] KQ
+						INNER JOIN [dbo].[MonHoc] MH ON KQ.MaMH = MH.MaMH
+						WHERE [TenMH] =N'Cơ sở dữ liệu')
+-- diễn giải
+SELECT MaSV FROM [dbo].[Ketqua] KQ
+						INNER JOIN [dbo].[MonHoc] MH ON KQ.MaMH = MH.MaMH
+						WHERE [TenMH] =N'Cơ sở dữ liệu'
+
+-- 3.
+select MH.MaMH, MH.TenMH, MH.Sotiet
+from MonHoc MH
+where MH.MaMH not in(
+    select KQ.MaMH FROM Ketqua KQ
+)
+go
+
+-- 4.
+select * from Khoa
+where MaKH not in(
+	select KH.MaKH from SinhVien SV
+	inner join Khoa KH on SV.MaKH = KH.MaKH
+)
+go
+
+-- 5.
+select * from SinhVien SV
+inner join Khoa KH on SV.MaKH = KH.MaKH 
+where KH.MaKH like '%AV%' and SV.MaSV not in(
+	select MaSV from Ketqua KQ
+	inner join MonHoc MH on KQ.MaMH = MH.MaMH
+	where TenMH = N'Cơ sở dữ liệu'
+)
+go
+
+-- 6.
+SELECT MH.MaMH, MH.TenMH, MH.Sotiet from SinhVien SV
+inner join Ketqua KQ on SV.MaSV = KQ.MaSV
+inner join MonHoc MH on KQ.MaMH = MH.MaMH
+inner join Khoa KH on SV.MaKH = KH.MaKH
+WHERE KH.TenKH = 'Lý' and MH.MaMH not in(
+    SELECT MaMH from KetQua
+    WHERE MaSV in (
+        SELECT MaSV from SinhVien SV
+		inner join Khoa KH on SV.MaKH = KH.MaKH
+        where TenKH = 'Lý'
+    )
+)
+go
+
+-- 7.
+select * from SinhVien SV
+inner join KetQua KQ on SV.MaSV = KQ.MaSV
+WHERE MaMH = 'Đồ họa' and Diem < (
+    select MIN(Diem) from KetQua KQ
+    inner join SinhVien SV on KQ.MaSV = SV.MaSV
+	inner join MonHoc MH on KQ.MaMH = MH.MaMH
+    where SV.MaKH = '%TH%' and MH.TenMH = 'Đồ họa'
+)
+go
+
+-- 8.
+select * from SinhVien
+where NgaySinh >(
+	select MIN(NgaySinh) from SinhVien
+	where MaKH like '%AV%'
+)
+go
+
+-- 9.
+select * from SinhVien
+where HocBong >(
+	select MAX(HocBong) from SinhVien SV
+	inner join Khoa KH on SV.MaKH = KH.MaKH
+	where TenKH = N'Triết'
+)  order by HocBong DESC
+go
+
+-- 10
+select * from SinhVien
+where NoiSinh = (
+    select SV.NoiSinh from SinhVien SV
+    inner join Khoa KH ON SV.MaKH = KH.MaKH
+    where KH.TenKH = 'Lý'
+	order by HocBong DESC
+)
+go
+
+-- 11
+select SV.MaSV, CONCAT(SV.HoSV, ' ', SV.TenSV) as HoTen, MH.TenMH, KQ.Diem
+from Ketqua KQ
+inner join SinhVien SV on KQ.MaSV = SV.MaSV
+inner join MonHoc MH on KQ.MaMH = MH.MaMH
+where KQ.Diem in(
+	select MAX(KQ.Diem) from Ketqua KQ
+	inner join MonHoc MH on KQ.MaMH = MH.MaMH
+	group by MH.MaMH
+)
+group by SV.MaSV, CONCAT(SV.HoSV, ' ', SV.TenSV), MH.TenMH, KQ.Diem
+go
+
+-- 12.
+SELECT SV.MaSV, KH.TenKH, SV.HocBong
+FROM SinhVien SV
+inner join Khoa KH on SV.MaKH = KH.MaKH
+where SV.HocBong in (
+    select MAX(SV.HocBong) as MaxHB from SinhVien SV
+    inner join Khoa KH on SV.MaKH = KH.MaKH
+    GROUP BY KH.TenKH
+)
+go
+
+-- Bài 6
+-- 1.
+insert into SinhVien(MaSV, HoSV, TenSV, Phai, NgaySinh, NoiSinh, MaKH, HocBong) values
+(N'C02', N'Lê Thành', N'Nguyên', 0, N'1980/10/20', N'Thành phố Hồ Chí Minh', N'TH', 850000)
+select * from SinhVien
+go
+
+-- 2.
+insert into MonHoc(MaMH, TenMH, Sotiet) values
+(N'10', N'Xử lí ảnh', 45)
+select * from MonHoc
+go
+
+-- 3.
+insert into Khoa(MaKH, TenKH) values
+(N'CT', N'Công trình')
+select * from Khoa
+go
+
+-- 4.
+insert into SinhVien(MaSV, HoSV, TenSV, Phai, NgaySinh, NoiSinh, MaKH, HocBong) values
+(N'C04', N'Nguyễn Trần', N'Quân', 0, GETDATE(), N'Huế', N'CT', 950000)
+select * from SinhVien
+go
+
+-- 5.
