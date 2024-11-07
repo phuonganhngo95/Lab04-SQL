@@ -429,3 +429,34 @@ inner join MonHoc MH on KQ.MaMH = MH.MaMH
 group by MH.MaMH, MH.TenMH
 having AVG(KQ.Diem) > 6
 go
+
+-- Bài 4
+-- 1.
+declare @MaKH nvarchar(2)
+set @MaKH = 'AV'
+select SV.MaSV, CONCAT(SV.HoSV, ' ', SV.TenSV) as HoTen, IIF(SV.Phai=1, N'Nam', IIF(SV.Phai=0, N'Nữ', N'NULL')) as GioiTinh, KH.TenKH
+from SinhVien SV
+inner join Khoa KH on SV.MaKH = KH.MaKH
+where KH.MaKH = @MaKH
+go
+
+-- 2.
+declare @Diem float
+set @Diem = 3.5
+select SV.MaSV, CONCAT(SV.HoSV,' ', SV.TenSV) as HoTen, MH.TenMH, KQ.Diem 
+from SinhVien SV
+inner join Ketqua KQ on SV.MaSV = KQ.MaSV
+inner join MonHoc MH on KQ.MaMH = MH.MaMH
+where TenMH = N'Cơ sở dữ liệu' and Diem > @Diem
+go
+
+-- 3.
+declare @TenMH nvarchar(50)
+set @TenMH = N'Cơ sở dữ liệu'
+select SV.MaSV, KH.TenKH, MH.TenMH, KQ.Diem 
+from SinhVien SV
+inner join Khoa KH on SV.MaKH = KH.MaKH
+inner join Ketqua KQ on SV.MaSV = KQ.MaSV
+inner join MonHoc MH on KQ.MaMH = MH.MaMH
+where TenMH = @TenMH
+go
