@@ -627,3 +627,126 @@ select * from SinhVien
 go
 
 -- 5.
+insert into KetQua(MaSV, MaMH, Diem)
+select MaSV, N'06', 7 from SinhVien
+where MaKH = (
+	select MaKH from Khoa where TenKH = 'Tin học'
+)
+select * from Ketqua
+
+-- 6.
+insert into Ketqua(MaSV, MaMH, Diem)
+select N'C02', MaMH, 8 from MonHoc
+select * from Ketqua
+go
+
+-- Bài 7
+-- 1.
+create table DeleteTable(
+	MaSV nvarchar(3) not null,
+	HoTen nvarchar(100) not null,
+	Phai bit not null,
+	NgaySinh smalldatetime not null,
+	NoiSinh nvarchar(100) not null,
+	TenKH nvarchar(50) not null,
+	HocBong float null
+)
+select * from DeleteTable
+go
+
+-- 2.
+delete from DeleteTable where HocBong is null
+select * from DeleteTable
+go
+
+-- 3.
+delete from DeleteTable where NgaySinh = '1987/12/20'
+select * from DeleteTable
+go
+
+-- 4.
+delete from DeleteTable where NgaySinh < '1987/03/01'
+select * from DeleteTable
+go
+
+-- 5.
+delete from DeleteTable where Phai = 0 and TenKH = 'Tin học'
+select * from DeleteTable
+go
+
+-- Bài 8
+-- 1.
+update MonHoc
+set Sotiet = 45
+where TenMH = 'Văn'
+select * from MonHoc
+go
+
+-- 2.
+update SinhVien
+set TenSV = N'Kỳ'
+where TenSV = N'Mai'
+select * from SinhVien
+go
+
+-- 3.
+update SinhVien
+set Phai = 0
+where CONCAT(HoSV, ' ', TenSV) = N'Trần Thanh Kỳ'
+select * from SinhVien
+go
+
+-- 4.
+update SinhVien
+set NgaySinh = '1990/07/05'
+where CONCAT(HoSV, ' ', TenSV) = N'Trần Thị Thu Thủy'
+select * from SinhVien
+go
+
+-- 5.
+update SinhVien
+set HocBong += 100000
+where MaKH like '%AV%'
+select * from SinhVien
+go
+
+-- 6.
+update KQ
+set Diem += 5
+from Ketqua KQ
+inner join MonHoc MH on KQ.MaMH = MH.MaMH
+where TenMH = N'Trí tuệ nhân tạo' and MaSV in(
+	select MaSV from SinhVien
+	where MaKH = '%AV%'
+)
+select * from Ketqua
+go
+
+-- 7.
+update SinhVien
+set HocBong =
+	case 
+		when Phai = 1 and MaKH like '%AV%' then HocBong + 100000
+		when Phai = 0 and MaKH like '%TH%' then HocBong + 150000
+		else HocBong + 50000
+	end
+select * from SinhVien
+go
+
+-- 8.
+update Ketqua
+set Diem =
+	case
+		when MaSV in(
+			select MaSV from SinhVien
+			where MaKH like '%AV%'
+		) then LEAST(Diem + 2, 10)
+		when MaSV in(
+			select MaSV from SinhVien
+			where MaKH like '%TH%'
+		) then LEAST(Diem - 1, 10)
+		else Diem
+	end
+where MaMH = '01'
+select * from Ketqua
+go
